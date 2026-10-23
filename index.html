@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="violet">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Levins Dashboard</title>
+  <meta name="description" content="Meine persönliche Startseite">
+  <meta name="theme-color" content="#000000">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Dashboard">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Zum Inhalt springen</a>
+
+  <header class="topbar">
+    <a class="brand" href="#start"><span class="brand-mark" aria-hidden="true"></span>Levins Dashboard</a>
+    <nav class="nav" aria-label="Hauptnavigation">
+      <a href="#start">Start</a>
+      <a href="#w-meds" data-for="meds">Medikamente</a>
+      <a href="#w-todo" data-for="todo">Aufgaben</a>
+      <a href="#w-calendar" data-for="calendar">Kalender</a>
+      <a href="#w-links" data-for="links">Links</a>
+      <a href="#w-music" data-for="music">Musik</a>
+    </nav>
+    <button class="icon-btn" id="openSettings" type="button" aria-label="Einstellungen öffnen">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
+  </header>
+
+  <main id="main" class="wrap">
+    <div class="banner" id="storageBanner" role="alert" hidden></div>
+
+    <!-- Begrüßung und Uhr -->
+    <section class="hero" id="start" aria-label="Begrüßung und Uhrzeit">
+      <p class="greeting" id="greeting">Hallo</p>
+      <div class="clock" role="timer" aria-live="off">
+        <span id="clockH">--</span><span class="colon">:</span><span id="clockM">--</span><span class="secs"><span class="colon">:</span><span id="clockS">--</span></span>
+      </div>
+      <p class="date" id="date">&nbsp;</p>
+    </section>
+
+    <!-- Widgets (Reihenfolge und Sichtbarkeit steuert script.js) -->
+    <div class="grid" id="grid">
+
+      <!-- Wetter -->
+      <section class="card" id="w-weather" data-widget="weather">
+        <div class="card-head">
+          <h2>Wetter</h2>
+          <button class="ghost" id="weatherRefresh" type="button">Aktualisieren</button>
+        </div>
+        <div id="weatherBody" class="weather-body"></div>
+      </section>
+
+      <!-- Aufgaben -->
+      <section class="card" id="w-todo" data-widget="todo">
+        <div class="card-head"><h2>Aufgaben</h2></div>
+        <form class="form row" id="todoForm" autocomplete="off">
+          <label class="sr" for="todoInput">Neue Aufgabe</label>
+          <input id="todoInput" type="text" maxlength="200" placeholder="Neue Aufgabe" required>
+          <button class="btn" type="submit">Hinzufügen</button>
+        </form>
+        <ul class="todos" id="todoList"></ul>
+        <div class="card-foot">
+          <span id="todoCount"></span>
+          <button class="ghost" id="todoClear" type="button" hidden>Erledigte entfernen</button>
+        </div>
+      </section>
+
+
+      <!-- Medikamente -->
+      <section class="card" id="w-meds" data-widget="meds">
+        <div class="card-head">
+          <h2>Medikamente</h2>
+          <button class="ghost" type="button" data-edit-toggle="meds" aria-pressed="false">Bearbeiten</button>
+        </div>
+        <ul class="meds" id="medList"></ul>
+        <form class="form edit-only" id="medForm" autocomplete="off">
+          <label class="sr" for="medName">Name</label>
+          <input id="medName" type="text" maxlength="40" placeholder="Name, zum Beispiel Tablette A" required>
+          <label class="sr" for="medDose">Menge</label>
+          <input id="medDose" type="text" maxlength="40" placeholder="Menge, zum Beispiel 1 Tablette (optional)">
+          <label class="field-label" for="medMode">Wie oft?</label>
+          <select id="medMode">
+            <option value="daily">Jeden Tag</option>
+            <option value="interval">Alle paar Tage</option>
+            <option value="weekdays">An bestimmten Wochentagen</option>
+          </select>
+          <div id="medIntervalBox" hidden>
+            <label class="field-label" for="medInterval">Alle wie viele Tage?</label>
+            <input id="medInterval" type="number" min="2" max="60" value="2" inputmode="numeric">
+            <label class="field-label" for="medStart">Erster Einnahmetag</label>
+            <input id="medStart" type="date">
+          </div>
+          <div id="medDaysBox" hidden>
+            <span class="field-label">An welchen Tagen?</span>
+            <div class="wd-row" id="medDays"></div>
+          </div>
+          <button class="btn" type="submit">Medikament hinzufügen</button>
+        </form>
+        <p class="hint">Nur eine Erinnerungshilfe. Maßgeblich ist der Plan deines Arztes oder deiner Ärztin.</p>
+      </section>
+
+      <!-- Wochenaufgaben -->
+      <section class="card" id="w-weekly" data-widget="weekly">
+        <div class="card-head"><h2>Wochenaufgaben</h2></div>
+        <ul class="todos" id="weeklyList"></ul>
+        <form class="form" id="weeklyForm" autocomplete="off">
+          <label class="sr" for="weeklyText">Neue Wochenaufgabe</label>
+          <input id="weeklyText" type="text" maxlength="120" placeholder="Wiederkehrende Aufgabe" required>
+          <div class="two">
+            <label class="sr" for="weeklyDay">Tag</label>
+            <select id="weeklyDay"></select>
+            <button class="btn" type="submit">Hinzufügen</button>
+          </div>
+        </form>
+        <div class="card-foot"><span id="weeklyCount"></span></div>
+      </section>
+
+      <!-- Kalender -->
+      <section class="card wide" id="w-calendar" data-widget="calendar">
+        <div class="card-head">
+          <h2>Kalender</h2>
+          <div class="cal-nav">
+            <button class="icon-btn small" id="calPrev" type="button" aria-label="Vorheriger Monat">&#8249;</button>
+            <span class="cal-title" id="calTitle" aria-live="polite"></span>
+            <button class="icon-btn small" id="calNext" type="button" aria-label="Nächster Monat">&#8250;</button>
+            <button class="ghost" id="calToday" type="button">Heute</button>
+          </div>
+        </div>
+        <div class="cal-layout">
+          <div>
+            <div class="cal-grid cal-dow" aria-hidden="true"><span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span></div>
+            <div class="cal-grid" id="calGrid"></div>
+          </div>
+          <div class="cal-side">
+            <h3 id="calDayTitle"></h3>
+            <ul class="events" id="calDayList"></ul>
+            <form class="form" id="eventForm" autocomplete="off">
+              <label class="sr" for="eventTitle">Termin</label>
+              <input id="eventTitle" type="text" maxlength="100" placeholder="Neuer Termin" required>
+              <label class="sr" for="eventRepeat">Wiederholung</label>
+              <select id="eventRepeat">
+                <option value="none">Einmalig</option>
+                <option value="weekly">Jede Woche</option>
+                <option value="monthly">Jeden Monat</option>
+                <option value="yearly">Jedes Jahr</option>
+              </select>
+              <div class="two">
+                <label class="sr" for="eventTime">Uhrzeit</label>
+                <input id="eventTime" type="time">
+                <button class="btn" type="submit">Eintragen</button>
+              </div>
+            </form>
+            <h3>Nächste Termine</h3>
+            <ul class="events" id="calUpcoming"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Schnellzugriffe -->
+      <section class="card" id="w-links" data-widget="links">
+        <div class="card-head">
+          <h2>Schnellzugriffe</h2>
+          <button class="ghost" type="button" data-edit-toggle="links" aria-pressed="false">Bearbeiten</button>
+        </div>
+        <div class="tiles" id="linkList"></div>
+        <form class="form edit-only" id="linkForm" autocomplete="off">
+          <label class="sr" for="linkTitle">Name</label>
+          <input id="linkTitle" type="text" maxlength="40" placeholder="Name, zum Beispiel Mail" required>
+          <label class="sr" for="linkUrl">Adresse</label>
+          <input id="linkUrl" type="text" inputmode="url" placeholder="Adresse, zum Beispiel gmail.com" required>
+          <button class="btn" type="submit">Link hinzufügen</button>
+        </form>
+      </section>
+
+      <!-- MeTube -->
+      <section class="card" id="w-metube" data-widget="metube">
+        <div class="card-head"><h2>MeTube</h2></div>
+        <a class="btn block" id="metubeLink" href="http://localhost:8081" target="_blank" rel="noopener noreferrer">MeTube öffnen</a>
+        <p class="mono-line" id="metubeUrlText"></p>
+        <p class="hint">Dein Downloader läuft nur auf deinem Laptop. Der Link klappt, wenn du im selben WLAN bist und die Adresse stimmt.</p>
+        <button class="ghost" id="metubeChange" type="button">Adresse ändern</button>
+      </section>
+
+      <!-- Musik -->
+      <section class="card wide" id="w-music" data-widget="music">
+        <div class="card-head">
+          <h2>Musik</h2>
+          <button class="ghost" type="button" data-edit-toggle="music" aria-pressed="false">Bearbeiten</button>
+        </div>
+
+        <h3>Projekte und Releases</h3>
+        <ul class="projects" id="projectList"></ul>
+        <form class="form edit-only" id="projectForm" autocomplete="off">
+          <label class="sr" for="pTitle">Titel</label>
+          <input id="pTitle" type="text" maxlength="80" placeholder="Titel des Projekts" required>
+          <div class="two">
+            <label class="sr" for="pType">Art</label>
+            <select id="pType"></select>
+            <label class="sr" for="pStatus">Stand</label>
+            <select id="pStatus"></select>
+          </div>
+          <label class="field-label" for="pDate">Release-Datum (optional)</label>
+          <input id="pDate" type="date">
+          <label class="sr" for="pUrl">Link</label>
+          <input id="pUrl" type="text" inputmode="url" placeholder="Link zum Song oder Projekt (optional)">
+          <button class="btn" type="submit">Projekt hinzufügen</button>
+        </form>
+
+        <h3>Wichtige Musiklinks</h3>
+        <div class="tiles" id="musicLinkList"></div>
+        <form class="form edit-only" id="musicLinkForm" autocomplete="off">
+          <label class="sr" for="mlTitle">Name</label>
+          <input id="mlTitle" type="text" maxlength="40" placeholder="Name, zum Beispiel Mein Profil" required>
+          <label class="sr" for="mlUrl">Adresse</label>
+          <input id="mlUrl" type="text" inputmode="url" placeholder="Adresse" required>
+          <button class="btn" type="submit">Musiklink hinzufügen</button>
+        </form>
+      </section>
+
+      <!-- Notizen -->
+      <section class="card" id="w-notes" data-widget="notes">
+        <div class="card-head"><h2>Notizen</h2></div>
+        <label class="sr" for="notesArea">Notizen</label>
+        <textarea id="notesArea" rows="6" maxlength="20000" placeholder="Ideen, Texte, Gedanken. Wird automatisch gespeichert."></textarea>
+      </section>
+
+    </div>
+
+    <footer class="footer">Levins Dashboard. Alle Daten bleiben in diesem Browser. <span id="saveState"></span></footer>
+  </main>
+
+  <!-- Einstellungen -->
+  <div class="overlay" id="overlay"></div>
+  <aside class="panel" id="settings" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="panel-head">
+      <h2 id="settingsTitle">Einstellungen</h2>
+      <button class="btn" id="closeSettings" type="button">Fertig</button>
+    </div>
+
+    <form id="settingsForm" autocomplete="off">
+      <div class="field">
+        <label for="setName">Dein Name für die Begrüßung</label>
+        <input id="setName" type="text" maxlength="40">
+      </div>
+
+      <div class="field">
+        <label for="setCity">Stadt für das Wetter</label>
+        <input id="setCity" type="text" maxlength="80" placeholder="zum Beispiel Köln">
+        <p class="hint">Nur Stadtname, keine Adresse. Er bleibt in deinem Browser und geht nur an den Wetterdienst Open-Meteo.</p>
+      </div>
+
+      <div class="field">
+        <label for="setMetube">Adresse deines MeTube</label>
+        <input id="setMetube" type="text" inputmode="url" placeholder="http://localhost:8081">
+        <p class="hint">Am Laptop zum Beispiel http://localhost:8081. Vom Handy aus brauchst du die IP-Adresse des Laptops im WLAN, zum Beispiel http://192.168.0.23:8081.</p>
+      </div>
+
+      <fieldset class="field">
+        <legend>Farbe</legend>
+        <div class="swatches">
+          <label class="swatch"><input type="radio" name="theme" value="violet"><span class="dot" style="--c:#a855f7"></span>Violett</label>
+          <label class="swatch"><input type="radio" name="theme" value="magenta"><span class="dot" style="--c:#d946ef"></span>Magenta</label>
+          <label class="swatch"><input type="radio" name="theme" value="indigo"><span class="dot" style="--c:#818cf8"></span>Indigo</label>
+        </div>
+      </fieldset>
+
+      <div class="field">
+        <label class="check">
+          <input id="setLite" type="checkbox"><span class="check-text">Sparmodus: weniger Effekte, schneller auf alten Geräten</span>
+        </label>
+      </div>
+
+      <fieldset class="field">
+        <legend>Widgets anzeigen und sortieren</legend>
+        <ul class="wlist" id="widgetList"></ul>
+      </fieldset>
+
+      <fieldset class="field">
+        <legend>Daten</legend>
+        <div class="btn-row">
+          <button class="btn" id="exportBtn" type="button">Sicherung speichern</button>
+          <button class="btn" id="importBtn" type="button">Sicherung laden</button>
+          <button class="btn danger" id="resetBtn" type="button">Alles zurücksetzen</button>
+        </div>
+        <input id="importFile" type="file" accept="application/json,.json" hidden>
+        <p class="hint">Dein Browser kann Daten verlieren, wenn du ihn aufräumst. Mach ab und zu eine Sicherung.</p>
+      </fieldset>
+    </form>
+  </aside>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
